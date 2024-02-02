@@ -56,7 +56,15 @@ type Service struct {
 	storeService StoreService
 }
 
-func (s Service) CompletePurchase(ctx context.Context, storeID uuid.UUID, purchase *Purchase, coffeeBuxCard *loyalty.CoffeeBux) error {
+func NewService(cardService CardChargeService, repo Repository, storeService StoreService) *Service {
+	return &Service{
+		cardService:  cardService,
+		purchaseRepo: repo,
+		storeService: storeService,
+	}
+}
+
+func (s *Service) CompletePurchase(ctx context.Context, storeID uuid.UUID, purchase *Purchase, coffeeBuxCard *loyalty.CoffeeBux) error {
 	if err := purchase.validateAndEnrich(); err != nil {
 		return err
 	}
@@ -91,9 +99,9 @@ func (s Service) CompletePurchase(ctx context.Context, storeID uuid.UUID, purcha
 	return nil
 }
 
-func (s Service) calculateStoreSpecificDiscount(ctx context.Context, storeID uuid.UUID, purchase *Purchase) error {
+func (s *Service) calculateStoreSpecificDiscount(ctx context.Context, storeID uuid.UUID, purchase *Purchase) error {
 	discount, err := s.storeService.GetStoreSpecificDiscount(ctx, storeID)
-	if err != nil {
+	if err != nil && !errors.Is(err, store.ErrNoDiscount) {
 		return fmt.Errorf("failed to get discount: %w", err)
 	}
 
