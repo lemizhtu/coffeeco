@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Rhymond/go-money"
 	"github.com/google/uuid"
 	coffeeco "github.com/lemizhtu/coffeego/internal"
 	"github.com/lemizhtu/coffeego/internal/payment"
@@ -51,23 +50,23 @@ func (mr *MongoRepository) Store(ctx context.Context, purchase Purchase) error {
 }
 
 type mongoPurchase struct {
-	id                 uuid.UUID
-	store              store.Store
-	productsToPurchase []coffeeco.Product
-	total              money.Money
-	paymentMeans       payment.Means
-	timeOfPurchase     time.Time
-	cardToken          *string
+	ID                 uuid.UUID          `bson:"id"`
+	Store              store.Store        `bson:"store"`
+	ProductsToPurchase []coffeeco.Product `bson:"products_to_purchase"`
+	Total              int64              `bson:"total"`
+	PaymentMeans       payment.Means      `bson:"payment_means"`
+	TimeOfPurchase     time.Time          `bson:"time_of_purchase"`
+	CardToken          *string            `bson:"card_token"`
 }
 
 func toMongoPurchase(p Purchase) mongoPurchase {
 	return mongoPurchase{
-		id:                 p.ID,
-		store:              p.Store,
-		productsToPurchase: p.ProductsToPurchase,
-		total:              p.total,
-		paymentMeans:       p.PaymentMeans,
-		timeOfPurchase:     p.timeOfPurchase,
-		cardToken:          p.CardToken,
+		ID:                 p.ID,
+		Store:              p.Store,
+		ProductsToPurchase: p.ProductsToPurchase,
+		Total:              p.total.Amount(),
+		PaymentMeans:       p.PaymentMeans,
+		TimeOfPurchase:     p.timeOfPurchase,
+		CardToken:          p.CardToken,
 	}
 }
